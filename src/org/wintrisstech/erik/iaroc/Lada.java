@@ -10,7 +10,7 @@ import org.wintrisstech.sensors.UltraSonicSensors;
 /**
  * A Lada is an implementation of the IRobotCreateInterface, inspired by Vic's
  * awesome API. It is entirely event driven.
- *
+ * version 1.0 added Android compass 5/25/13
  * @author Erik
  */
 public class Lada extends IRobotCreateAdapter
