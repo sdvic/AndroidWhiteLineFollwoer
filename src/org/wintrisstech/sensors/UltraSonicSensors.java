@@ -61,18 +61,18 @@ public class UltraSonicSensors
      */
     public void readUltrasonicSensors() throws ConnectionLostException, InterruptedException
     {
-        frontUltrasonicStrobe.write(false);
-        frontUltrasonicStrobe.write(true);
-        frontUltrasonicStrobe.write(false);
-        frontDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
-        leftUltrasonicStrobe.write(false);
-        leftUltrasonicStrobe.write(true);
-        leftUltrasonicStrobe.write(false);
-        leftDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
-        rightUltrasonicStrobe.write(false);
-        rightUltrasonicStrobe.write(true);
-        rightUltrasonicStrobe.write(false);
-        rightDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
+//        frontUltrasonicStrobe.write(false);
+//        frontUltrasonicStrobe.write(true);
+//        frontUltrasonicStrobe.write(false);
+//        frontDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
+//        leftUltrasonicStrobe.write(false);
+//        leftUltrasonicStrobe.write(true);
+//        leftUltrasonicStrobe.write(false);
+//        leftDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
+//        rightUltrasonicStrobe.write(false);
+//        rightUltrasonicStrobe.write(true);
+//        rightUltrasonicStrobe.write(false);
+//        rightDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
     }
 
     public synchronized int getLeftDistance()

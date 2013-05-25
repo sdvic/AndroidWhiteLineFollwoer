@@ -15,7 +15,6 @@ import org.wintrisstech.sensors.UltraSonicSensors;
  */
 public class Lada extends IRobotCreateAdapter
 {
-    private static final String TAG = "Lada";
     private final Dashboard dashboard;
     public UltraSonicSensors sonar;
 
@@ -24,33 +23,25 @@ public class Lada extends IRobotCreateAdapter
         super(create);
         this.dashboard = dashboard;
         sonar = new UltraSonicSensors(ioio, dashboard);
-        
-        song(0, new int[]
-                {
-                    58, 10
-                });
     }
 
-    public void initialize() throws ConnectionLostException
+    public void initialize()
     {
-        dashboard.log("===========Android White Line Follower Version 0.3===========");
+        dashboard.log("===========Android Sensor Version 1.0===========");
         dashboard.log("Battery Charge = " + getBatteryCharge() + ", 2,755 = Full charge");
     }
 
-    public void loop() throws ConnectionLostException
-    {SystemClock.sleep(1000);
-        dashboard.log(dashboard.getAzimuth() + "");
+    public void loop()
+    {
+        SystemClock.sleep(1000);
+        dashboard.log("Azimuth " + dashboard.getAzimuth());
 //        try
 //        {
-//            dashboard.log("in loop");
-////                    driveDirect(100, 100);
-////                    readSensors(SENSORS_GROUP_ID6);
-//                    //dashboard.log(sonar.readUltrasonicSensors() + "");
-//                    SystemClock.sleep(1000);
-//        } catch (InterruptedException ex)
+//            sonar.readUltrasonicSensors();
+//        } catch (Exception ex)
 //        {
-//            Logger.getLogger(Lada.class.getName()).log(Level.SEVERE, null, ex);
+//            dashboard.log("??????????????????sonar hiccup");
 //        }
+//        dashboard.log(sonar.getFrontDistance() + "");
     }
-
 }

@@ -2,14 +2,8 @@ package org.wintrisstech.erik.iaroc;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.widget.ScrollView;
-import android.widget.TextView;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.IOIOLooper;
@@ -17,7 +11,6 @@ import ioio.lib.util.android.IOIOActivity;
 import java.util.Locale;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 import org.wintrisstech.irobot.ioio.SimpleIRobotCreate;
-import android.app.Activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -39,20 +32,15 @@ import android.widget.TextView;
  */
 public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListener, SensorEventListener
 {
-
-    /**
-     * Tag used for debugging.
-     */
-    private static final String TAG = "Dashboard";
     /**
      * Text view that contains all logged messages
      */
     private TextView mText;
     private ScrollView scroller;
     private SensorManager mSensorManager;
-private Sensor mCompass;
-private TextView mTextView;
-private float azimuth;
+    private Sensor mCompass;
+    private TextView mTextView;
+    private float azimuth;
     /**
      * A Lada instance
      */
@@ -73,11 +61,9 @@ private float azimuth;
          * pause.
          */
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.main);
-           mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-    mCompass = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-    //mTextView = (TextView) findViewById(R.id.tvSensor);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mCompass = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
@@ -86,7 +72,6 @@ private float azimuth;
         mText = (TextView) findViewById(R.id.text);
         scroller = (ScrollView) findViewById(R.id.scroller);
         log(getString(R.string.wait_ioio));
-
     }
 
     @Override
@@ -122,11 +107,14 @@ private float azimuth;
     public void onInit(int arg0)
     {
     }
-@Override
-protected void onResume() {
-    super.onResume();
-    mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_NORMAL);
-}
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
     public void speak(String stuffToSay)
     {
         mTts.setLanguage(Locale.US);
@@ -141,7 +129,6 @@ protected void onResume() {
     {
         return new IOIOLooper()
         {
-
             public void setup(IOIO ioio) throws ConnectionLostException, InterruptedException
             {
                 /*
@@ -192,34 +179,32 @@ protected void onResume() {
     {
         runOnUiThread(new Runnable()
         {
-
             public void run()
             {
                 mText.append(msg);
                 mText.append("\n");
-                scroller.smoothScrollTo(0, mText.getBottom()); 
+                scroller.smoothScrollTo(0, mText.getBottom());
             }
         });
     }
 
-
     // The following method is required by the SensorEventListener interface;
-public void onAccuracyChanged(Sensor sensor, int accuracy) {    
-}
+    public void onAccuracyChanged(Sensor sensor, int accuracy)
+    {
+    }
 
 // The following method is required by the SensorEventListener interface;
 // Hook this event to process updates;
-public void onSensorChanged(SensorEvent event) {
-    azimuth = Math.round(event.values[0]);
-    // The other values provided are: 
-    //  float pitch = event.values[1];
-    //  float roll = event.values[2];
-    log("Azimuth: " + Float.toString(getAzimuth()));
-}
+    public void onSensorChanged(SensorEvent event)
+    {
+        azimuth = Math.round(event.values[0]);
+        // The other values provided are: 
+        //  float pitch = event.values[1];
+        //  float roll = event.values[2];
+    }
 
     public float getAzimuth()
     {
         return azimuth;
     }
-
 }
