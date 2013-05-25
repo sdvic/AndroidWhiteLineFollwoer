@@ -1,5 +1,6 @@
 package org.wintrisstech.erik.iaroc;
 
+import android.os.SystemClock;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
@@ -21,9 +22,9 @@ public class Lada extends IRobotCreateAdapter
     public Lada(IOIO ioio, IRobotCreateInterface create, Dashboard dashboard) throws ConnectionLostException//constrictor
     {
         super(create);
-        sonar = new UltraSonicSensors(ioio);
         this.dashboard = dashboard;
-
+        sonar = new UltraSonicSensors(ioio, dashboard);
+        
         song(0, new int[]
                 {
                     58, 10
@@ -32,15 +33,24 @@ public class Lada extends IRobotCreateAdapter
 
     public void initialize() throws ConnectionLostException
     {
-        dashboard.log("===========Android White Line Follower Version 0.0===========");
-        dashboard.log("Battery Charge = " + getBatteryCharge() + ", 3,000 = Full charge");
-        readSensors(SENSORS_GROUP_ID6);
+        dashboard.log("===========Android White Line Follower Version 0.3===========");
+        dashboard.log("Battery Charge = " + getBatteryCharge() + ", 2,755 = Full charge");
     }
 
     public void loop() throws ConnectionLostException
-    {
-        driveDirect(100, 100);
-        readSensors(SENSORS_GROUP_ID6);
+    {SystemClock.sleep(1000);
+        dashboard.log(dashboard.getAzimuth() + "");
+//        try
+//        {
+//            dashboard.log("in loop");
+////                    driveDirect(100, 100);
+////                    readSensors(SENSORS_GROUP_ID6);
+//                    //dashboard.log(sonar.readUltrasonicSensors() + "");
+//                    SystemClock.sleep(1000);
+//        } catch (InterruptedException ex)
+//        {
+//            Logger.getLogger(Lada.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
 }

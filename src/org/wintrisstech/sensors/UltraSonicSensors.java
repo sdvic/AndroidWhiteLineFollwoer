@@ -5,6 +5,7 @@ import ioio.lib.api.IOIO;
 import ioio.lib.api.PulseInput;
 import ioio.lib.api.PulseInput.PulseMode;
 import ioio.lib.api.exception.ConnectionLostException;
+import org.wintrisstech.erik.iaroc.Dashboard;
 
 /**
  * An UltraSonicSensors instance is used to access three ultrasonic sensors
@@ -20,14 +21,19 @@ public class UltraSonicSensors
     private static final int LEFT_ULTRASONIC_INPUT_PIN = 35;
     private static final int FRONT_ULTRASONIC_INPUT_PIN = 36;
     private static final int RIGHT_ULTRASONIC_INPUT_PIN = 37;
-    private static final int STROBE_ULTRASONIC_OUTPUT_PIN = 15;
-    private final PulseInput left;
-    private final PulseInput front;
-    private final PulseInput right;
-    private DigitalOutput strobe;
+    private static final int STROBE_FRONT_ULTRASONIC_OUTPUT_PIN = 16;
+    private static final int STROBE_LEFT_ULTRASONIC_OUTPUT_PIN = 15;
+    private static final int STROBE_RIGHT_ULTRASONIC_OUTPUT_PIN = 17;
+    private final PulseInput leftUltrasonicInput;
+    private final PulseInput frontUltrasonicInput;
+    private final PulseInput rightUltrasonicInput;
+    private DigitalOutput frontUltrasonicStrobe;
+    private DigitalOutput rightUltrasonicStrobe;
+    private DigitalOutput leftUltrasonicStrobe;
     private int leftDistance;
     private int frontDistance = 10;
     private int rightDistance;
+    private Dashboard dashboard;
 
     /**
      * Constructor of a UltraSonicSensors instance.
@@ -36,12 +42,13 @@ public class UltraSonicSensors
      * @throws ConnectionLostException
      *
      */
-    public UltraSonicSensors(IOIO ioio) throws ConnectionLostException
+    public UltraSonicSensors(IOIO ioio, Dashboard dashboard) throws ConnectionLostException
     {
-        this.left = ioio.openPulseInput(LEFT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
-        this.front = ioio.openPulseInput(FRONT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
-        this.right = ioio.openPulseInput(RIGHT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
-        this.strobe = ioio.openDigitalOutput(STROBE_ULTRASONIC_OUTPUT_PIN);//*******
+        this.dashboard = dashboard;
+        this.leftUltrasonicInput = ioio.openPulseInput(LEFT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
+        this.frontUltrasonicInput = ioio.openPulseInput(FRONT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
+        this.rightUltrasonicInput = ioio.openPulseInput(RIGHT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
+        this.frontUltrasonicStrobe = ioio.openDigitalOutput(STROBE_FRONT_ULTRASONIC_OUTPUT_PIN);
     }
 
     /**
@@ -54,36 +61,30 @@ public class UltraSonicSensors
      */
     public void readUltrasonicSensors() throws ConnectionLostException, InterruptedException
     {
-        strobe.write(true);
-        strobe.write(false);
-        leftDistance = (int) (left.getDuration() * 18000);
+        frontUltrasonicStrobe.write(false);
+        frontUltrasonicStrobe.write(true);
+        frontUltrasonicStrobe.write(false);
+        frontDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
+        leftUltrasonicStrobe.write(false);
+        leftUltrasonicStrobe.write(true);
+        leftUltrasonicStrobe.write(false);
+        leftDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
+        rightUltrasonicStrobe.write(false);
+        rightUltrasonicStrobe.write(true);
+        rightUltrasonicStrobe.write(false);
+        rightDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
     }
 
-    /**
-     * Gets the last read distance in cm of the left sensor
-     *
-     * @return the left distance in cm
-     */
     public synchronized int getLeftDistance()
     {
         return leftDistance;
     }
 
-    /**
-     * Gets the last read distance in cm of the front sensor
-     *
-     * @return the front distance in cm
-     */
     public synchronized int getFrontDistance()
     {
         return frontDistance;
     }
 
-    /**
-     * Gets the last read distance in cm of the right sensor
-     *
-     * @return the right distance in cm
-     */
     public synchronized int getRightDistance()
     {
         return rightDistance;
@@ -94,9 +95,9 @@ public class UltraSonicSensors
      */
     public void closeConnection()
     {
-        left.close();
-        front.close();
-        right.close();
-        strobe.close();
+        leftUltrasonicInput.close();
+        frontUltrasonicInput.close();
+        rightUltrasonicInput.close();
+        frontUltrasonicStrobe.close();
     }
 }

@@ -2,6 +2,10 @@ package org.wintrisstech.erik.iaroc;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.widget.ScrollView;
@@ -12,8 +16,14 @@ import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 import java.util.Locale;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
-import org.wintrisstech.irobot.ioio.R;
 import org.wintrisstech.irobot.ioio.SimpleIRobotCreate;
+import android.app.Activity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.widget.TextView;
 
 /**
  * This is the main activity of the iRobot2012 application.
@@ -27,7 +37,7 @@ import org.wintrisstech.irobot.ioio.SimpleIRobotCreate;
  * @author Erik Colban
  *
  */
-public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListener
+public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListener, SensorEventListener
 {
 
     /**
@@ -39,6 +49,10 @@ public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListen
      */
     private TextView mText;
     private ScrollView scroller;
+    private SensorManager mSensorManager;
+private Sensor mCompass;
+private TextView mTextView;
+private float azimuth;
     /**
      * A Lada instance
      */
@@ -61,6 +75,9 @@ public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListen
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 //        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.main);
+           mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+    mCompass = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+    //mTextView = (TextView) findViewById(R.id.tvSensor);
 
         Intent checkIntent = new Intent();
         checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
@@ -75,6 +92,7 @@ public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListen
     @Override
     public void onPause()
     {
+        mSensorManager.unregisterListener(this);
         if (kalina != null)
         {
             log("Pausing");
@@ -104,7 +122,11 @@ public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListen
     public void onInit(int arg0)
     {
     }
-
+@Override
+protected void onResume() {
+    super.onResume();
+    mSensorManager.registerListener(this, mCompass, SensorManager.SENSOR_DELAY_NORMAL);
+}
     public void speak(String stuffToSay)
     {
         mTts.setLanguage(Locale.US);
@@ -179,4 +201,25 @@ public class Dashboard extends IOIOActivity implements TextToSpeech.OnInitListen
             }
         });
     }
+
+
+    // The following method is required by the SensorEventListener interface;
+public void onAccuracyChanged(Sensor sensor, int accuracy) {    
+}
+
+// The following method is required by the SensorEventListener interface;
+// Hook this event to process updates;
+public void onSensorChanged(SensorEvent event) {
+    azimuth = Math.round(event.values[0]);
+    // The other values provided are: 
+    //  float pitch = event.values[1];
+    //  float roll = event.values[2];
+    log("Azimuth: " + Float.toString(getAzimuth()));
+}
+
+    public float getAzimuth()
+    {
+        return azimuth;
+    }
+
 }
