@@ -17,6 +17,15 @@ public class Lada extends IRobotCreateAdapter
 {
     private final Dashboard dashboard;
     public UltraSonicSensors sonar;
+    public int irWallSignal; // Infrared wall sensor on Roomba.
+    private int leftSignal;
+    private int rightSignal;
+    private int leftFrontSignal;
+    private int rightFrontSignal;
+    private int wheelSpeed = 500;
+    private int relativeHeading = 0;
+    private int irSensorThreshhold = 2000;
+    public int turnSpan;
 
     public Lada(IOIO ioio, IRobotCreateInterface create, Dashboard dashboard) throws ConnectionLostException//constrictor
     {
