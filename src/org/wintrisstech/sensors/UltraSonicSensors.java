@@ -1,11 +1,11 @@
 package org.wintrisstech.sensors;
 
+import android.os.SystemClock;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.PulseInput;
 import ioio.lib.api.PulseInput.PulseMode;
 import ioio.lib.api.exception.ConnectionLostException;
-import org.wintrisstech.erik.iaroc.Dashboard;
 
 /**
  * An UltraSonicSensors instance is used to access three ultrasonic sensors
@@ -15,25 +15,24 @@ import org.wintrisstech.erik.iaroc.Dashboard;
  */
 public class UltraSonicSensors
 {
-    private static final String TAG = "UltraSonicSensor";
+
     private static final float CONVERSION_FACTOR = 17280.0F; //cm / s
-    private static final int NUM_SAMPLES = 2;
     private static final int LEFT_ULTRASONIC_INPUT_PIN = 35;
     private static final int FRONT_ULTRASONIC_INPUT_PIN = 36;
     private static final int RIGHT_ULTRASONIC_INPUT_PIN = 37;
-    private static final int STROBE_FRONT_ULTRASONIC_OUTPUT_PIN = 16;
-    private static final int STROBE_LEFT_ULTRASONIC_OUTPUT_PIN = 15;
-    private static final int STROBE_RIGHT_ULTRASONIC_OUTPUT_PIN = 17;
-    private final PulseInput leftUltrasonicInput;
-    private final PulseInput frontUltrasonicInput;
-    private final PulseInput rightUltrasonicInput;
-    private DigitalOutput frontUltrasonicStrobe;
-    private DigitalOutput rightUltrasonicStrobe;
-    private DigitalOutput leftUltrasonicStrobe;
+    private static final int LEFT_STROBE_ULTRASONIC_OUTPUT_PIN = 15;
+    private static final int FRONT_STROBE_ULTRASONIC_OUTPUT_PIN = 16;
+    private static final int RIGHT_STROBE_ULTRASONIC_OUTPUT_PIN = 17;
+    private final PulseInput left;
+    private final PulseInput front;
+    private final PulseInput right;
+    private DigitalOutput leftStrobe;
+    private DigitalOutput frontStrobe;
+    private DigitalOutput rightStrobe;
     private int leftDistance;
     private int frontDistance = 10;
     private int rightDistance;
-    private Dashboard dashboard;
+    private IOIO ioio;
 
     /**
      * Constructor of a UltraSonicSensors instance.
@@ -42,13 +41,15 @@ public class UltraSonicSensors
      * @throws ConnectionLostException
      *
      */
-    public UltraSonicSensors(IOIO ioio, Dashboard dashboard) throws ConnectionLostException
+    public UltraSonicSensors(IOIO ioio) throws ConnectionLostException
     {
-        this.dashboard = dashboard;
-        this.leftUltrasonicInput = ioio.openPulseInput(LEFT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
-        this.frontUltrasonicInput = ioio.openPulseInput(FRONT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
-        this.rightUltrasonicInput = ioio.openPulseInput(RIGHT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
-        this.frontUltrasonicStrobe = ioio.openDigitalOutput(STROBE_FRONT_ULTRASONIC_OUTPUT_PIN);
+        this.ioio = ioio;
+        this.left = ioio.openPulseInput(LEFT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
+        this.front = ioio.openPulseInput(FRONT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
+        this.right = ioio.openPulseInput(RIGHT_ULTRASONIC_INPUT_PIN, PulseMode.POSITIVE);
+        this.leftStrobe = ioio.openDigitalOutput(LEFT_STROBE_ULTRASONIC_OUTPUT_PIN);
+        this.frontStrobe = ioio.openDigitalOutput(FRONT_STROBE_ULTRASONIC_OUTPUT_PIN);
+        this.rightStrobe = ioio.openDigitalOutput(RIGHT_STROBE_ULTRASONIC_OUTPUT_PIN);
     }
 
     /**
@@ -61,30 +62,66 @@ public class UltraSonicSensors
      */
     public void readUltrasonicSensors() throws ConnectionLostException, InterruptedException
     {
-//        frontUltrasonicStrobe.write(false);
-//        frontUltrasonicStrobe.write(true);
-//        frontUltrasonicStrobe.write(false);
-//        frontDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
-//        leftUltrasonicStrobe.write(false);
-//        leftUltrasonicStrobe.write(true);
-//        leftUltrasonicStrobe.write(false);
-//        leftDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
-//        rightUltrasonicStrobe.write(false);
-//        rightUltrasonicStrobe.write(true);
-//        rightUltrasonicStrobe.write(false);
-//        rightDistance = (int)(frontUltrasonicInput.getDuration() * 18000);
+        ioio.beginBatch();//left...batch to ensure short strobe pulse
+        try
+        {
+            leftStrobe.write(true);
+            leftStrobe.write(false);
+        } finally
+        {
+            ioio.endBatch();
+        }
+        leftDistance = (int) (left.getDuration() * CONVERSION_FACTOR);
+        SystemClock.sleep(100);
+       ioio.beginBatch();//right
+        try
+        {
+            rightStrobe.write(true);
+            rightStrobe.write(false);
+        } finally
+        {
+            ioio.endBatch();
+        }
+        rightDistance = (int) (right.getDuration() * CONVERSION_FACTOR);
+        SystemClock.sleep(100);
+        ioio.beginBatch();//front
+        try
+        {
+            frontStrobe.write(true);
+            frontStrobe.write(false);
+        } finally
+        {
+            ioio.endBatch();
+        }
+        frontDistance = (int) (front.getDuration() * CONVERSION_FACTOR);
+        SystemClock.sleep(100);
     }
 
+    /**
+     * Gets the last read distance in cm of the left sensor
+     *
+     * @return the left distance in cm
+     */
     public synchronized int getLeftDistance()
     {
         return leftDistance;
     }
 
+    /**
+     * Gets the last read distance in cm of the front sensor
+     *
+     * @return the front distance in cm
+     */
     public synchronized int getFrontDistance()
     {
         return frontDistance;
     }
 
+    /**
+     * Gets the last read distance in cm of the right sensor
+     *
+     * @return the right distance in cm
+     */
     public synchronized int getRightDistance()
     {
         return rightDistance;
@@ -95,9 +132,9 @@ public class UltraSonicSensors
      */
     public void closeConnection()
     {
-        leftUltrasonicInput.close();
-        frontUltrasonicInput.close();
-        rightUltrasonicInput.close();
-        frontUltrasonicStrobe.close();
+        left.close();
+        front.close();
+        right.close();
+        leftStrobe.close();
     }
 }
